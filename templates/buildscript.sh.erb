@@ -1,0 +1,17 @@
+#!/bin/bash
+
+#######################################################
+# This script is for building the resource space application
+#######################################################
+
+# Define all the constant variables
+docroot="<%= @docroot %>"
+mysql_root_password="<%= @mysql_root_password %>"
+
+cd $docroot
+sudo svn co http://svn.montala.net/svn/resourcespace .
+sudo mkdir filestore
+sudo chmod 777 filestore
+
+chmod -R 777 include
+
