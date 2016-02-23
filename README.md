@@ -5,15 +5,10 @@ Puppet role definition for deployment of resourcespace
 
 Parameters
 -------------
-Sensible defaults for Naturalis in init.pp, extra_users_hash for additional SSH users that are allowed root permissions and webusers_hash for users allowed login permissions and edit docroot permissions.  
+Sensible defaults for Naturalis in init.pp
 
 ```
-  docroot              = documentroot
-  webdirs              = Array with webdirectories, 0770 permissions will be applied owner: www-data  group: www-data
-  rwwebdirs            = Array with webdirectories that need read and write permissions, starting at the highest path, 0777 permissions will be applied owner: www-data  group: www-data
-  enable_mysql         = when set to true a mysql server will be installed
-  mysql_root_password  = Mysql Root password
-  instances            = Instance hash, see the default for parameters
+  See init.pp for defaults and variables
 ```
 
 
@@ -21,13 +16,14 @@ Classes
 -------------
 - role_resourcespace
 - role_resourcespace::instances
-
+- role_resourcespace::treebase
 
 Dependencies
 -------------
 - puppetlabs/mysql
 - puppetlabs/apache
 - puppetlabs/concat
+- puppetlabs/vcsrepo
 - thias/php
 
 
@@ -37,7 +33,8 @@ class { role_resourcespace: }
 ```
 Result
 -------------
-Working Linux Apache (Mysql) PHP installation
+Working Linux Apache (Mysql) PHP installation customized for resource space including resourcespace buildscript in /opt 
+buildscript is run once during deployment. All defaults includes encryption + certificates by letsencrypt. 
 
 
 Limitations
@@ -52,9 +49,4 @@ Dependencies releases tested:
 - puppetlabs/apache 1.3.0
 - puppetlabs/concat 1.2.0
 - thias/php 1.0.0
-
-
-Authors
--------------
-Author Name <hugo.vanduijn@naturalis.nl>
-
+- puppetlabs/vcsrepo

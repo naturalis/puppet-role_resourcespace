@@ -13,5 +13,9 @@ sudo svn co http://svn.montala.net/svn/resourcespace .
 sudo mkdir filestore
 sudo chmod 777 filestore
 
-chmod -R 777 include
+#copy config
+cp /opt/config.php ./include
+chmod 644 ./include/config.php
 
+# restart apache2
+service apache2 restart

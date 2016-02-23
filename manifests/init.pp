@@ -10,14 +10,39 @@ class role_resourcespace (
   $docroot                                = '/var/www/resourcespace',
   $mysql_root_password                    = 'rootpassword',
   $mysql_password                         = 'password',
+  $hostname                               = 'rs.naturalis.nl',
+  $letsencrypt                            = true,
+  $letsencrypt_path                       = '/opt/letsencrypt',
+  $letsencrypt_repo                       = 'git://github.com/letsencrypt/letsencrypt.git',
+  $letsencrypt_version                    = 'v0.1.0',
+  $letsencrypt_live                       = '/etc/letsencrypt/live/rs.naturalis.nl/cert.pem',
+  $letsencrypt_email                      = 'aut@naturalis.nl',
+  $letsencrypt_domain                     = 'rs.naturalis.nl',
+  $letsencrypt_server                     = 'https://acme-v01.api.letsencrypt.org/directory',
   $instances                              =
-          {'site.resourcespacesite.nl' => {
-            'serveraliases'   => '*.resourcespacesite.nl',
-            'docroot'         => '/var/www/resourcespace',
-            'directories'     => [{ 'path' => '/var/www/resourcespace', 'options' => '-Indexes +FollowSymLinks +MultiViews', 'allow_override' => 'All' }],
-            'port'            => 80,
-            'serveradmin'     => 'webmaster@naturalis.nl',
-            'priority'        => 10,
+          {'rs.naturalis.nl-nonssl' => {
+                 'serveraliases'        => '*.naturalis.nl',
+                 'docroot'              => '/var/www/resourcespace',
+                 'directories'          => [{ 'path' => '/var/www/resourcespace',
+                 'options'              => '-Indexes +FollowSymLinks +MultiViews',
+                 'allow_override'       => 'All'}],
+                 'rewrites'             => [{'rewrite_rule' => ['^/?(.*) https://%{SERVER_NAME}/$1 [R,L]']}],
+                 'port'                 => 80,
+                 'serveradmin'          => 'aut@naturalis.nl',
+                 'priority'             => 10,
+             },
+           'rs.naturalis.nl' => {
+                 'serveraliases'        => '*.naturalis.nl',
+                 'docroot'              => '/var/www/resourcespace',
+                 'directories'          => [{ 'path' => '/var/www/resourcespace', 'options' => '-Indexes +FollowSymLinks +MultiViews', 'allow_override' => 'All' }],
+                 'port'                 => 443,
+                 'serveradmin'          => 'webmaster@naturalis.nl',
+                 'priority'             => 10,
+                 'ssl'                  => true,
+                 'ssl_cert'             => '/etc/letsencrypt/live/rs.naturalis.nl/cert.pem',
+                 'ssl_key'              => '/etc/letsencrypt/live/rs.naturalis.nl/privkey.pem',
+                 'ssl_chain'            => '/etc/letsencrypt/live/rs.naturalis.nl/chain.pem',
+                 'additional_includes'  => '/etc/letsencrypt/options-ssl-apache.conf',
             },
           },
   $keepalive                            = 'Off',
@@ -25,13 +50,11 @@ class role_resourcespace (
   $keepalive_timeout                    = '15',
   $php_memory_limit                     = '200M',
   $upload_max_filesize                  = '100M',
-  $post_max_size                        = '100M'.
+  $post_max_size                        = '100M',
   $max_execution_time                   = '30',
   $max_input_time                       = '60',
-  $SecFilterEngine                      = 'Off',
-  $SecFilterScanPOST                    = 'Off',
-  $short_open_tag                       = 'Off', 
-  $packages                             = ['subversion','imagemagick','ghostscript','antiword','xpdf','libav-tools','libimage-exiftool-perl'],
+  $short_open_tag                       = 'Off',
+  $packages                             = ['git','subversion','imagemagick','ghostscript','antiword','xpdf','libav-tools','libimage-exiftool-perl'],
 ){
 
 # install packages
@@ -49,9 +72,7 @@ class role_resourcespace (
     post_max_size             => $post_max_size,
     max_execution_time        => $max_execution_time,
     max_input_time            => $max_input_time,
-    SecFilterEngine           => $SecFilterEngine,
-    SecFilterScanPOST         => $SecFilterScanPOST,
-    short_open_tag            => $short_open_tag, 
+    short_open_tag            => $short_open_tag,
     require                   => Class['apache']
   }
 
@@ -73,14 +94,19 @@ class role_resourcespace (
       instances               => $instances,
   }
 
-# Configure MySQL Security and finetuning if needed
-  if $enable_mysql {
-    class { 'mysql::server::account_security':}
-    class { 'mysql::server':
-        root_password         => $mysql_root_password,
-        service_enabled       => true,
-        service_manage        => true,
+# Install letsencrypt cert
+  if ($letsencrypt == true){
+    class { 'role_resourcespace::letsencrypt': 
+      require                 => Package[$packages],
     }
+  }
+
+# Configure MySQL Security and finetuning if needed
+  class { 'mysql::server::account_security':}
+  class { 'mysql::server':
+    root_password         => $mysql_root_password,
+    service_enabled       => true,
+    service_manage        => true,
   }
 
 # Create resourcespace database
@@ -89,6 +115,8 @@ class role_resourcespace (
     password       => $mysql_password,
     host           => 'localhost',
     grant          => ['ALL'],
+    require        => Class['mysql::server'],
+
   }
 
 # Create buildscript.sh file
@@ -100,9 +128,27 @@ class role_resourcespace (
     mode        => '0700',
   }
 
+# Create config.php file
+  file { "/opt/config.php":
+    ensure      => present,
+    content     =>  template('role_resourcespace/config.php.erb'),
+    owner       => 'root',
+    group       => 'root',
+    mode        => '0600',
+  }
+
+# Run Buildscript
+  exec { 'Build resourcespace':
+    command     => "/opt/buildscript.sh",
+    path        => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ],
+    unless      => "/usr/bin/test -f ${docroot}/include/config.php",
+    require     => [File["/opt/buildscript.sh"],Class['role_resourcespace::instances']]
+
+  }
+
 # Create daily cronjob
   cron { 'copy hitcount':
-    command => "/usr/sbin/wget -q -r http://localhost/pages/tools/cron_copy_hitcount.php",
+    command => "/usr/bin/wget -q -r http://localhost/pages/tools/cron_copy_hitcount.php",
     user    => root,
     hour    => 2,
     minute  => 0
