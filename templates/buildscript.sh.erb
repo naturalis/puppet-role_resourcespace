@@ -10,12 +10,18 @@ mysql_root_password="<%= @mysql_root_password %>"
 
 cd $docroot
 sudo svn co http://svn.resourcespace.org/svn/rs/trunk .
-sudo mkdir filestore
-sudo chmod 777 filestore
+sudo mkdir -p filestore/system/slideshow
+sudo chmod -R 777 filestore
+
 
 #copy config
 cp /opt/config.php ./include
 chmod 644 ./include/config.php
+
+
+
+#import database
+mysql -uroot -p"<%= @mysql_root_password %>" resourcespace < /opt/db.sql
 
 # restart apache2
 service apache2 restart

@@ -137,12 +137,21 @@ class role_resourcespace (
     mode        => '0600',
   }
 
+# Create empty database file
+  file { "/opt/db.sql":
+    ensure      => present,
+    source      => 'puppet:///modules/role_resourcespace/db.sql',
+    owner       => 'root',
+    group       => 'root',
+    mode        => '0600',
+  }
+
 # Run Buildscript
   exec { 'Build resourcespace':
     command     => "/opt/buildscript.sh",
     path        => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ],
     unless      => "/usr/bin/test -f ${docroot}/include/config.php",
-    require     => [File["/opt/buildscript.sh"],Class['role_resourcespace::instances']]
+    require     => [File["/opt/db.sql"],File["/opt/buildscript.sh"],Class['role_resourcespace::instances']]
 
   }
 
