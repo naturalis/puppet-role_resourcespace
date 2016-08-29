@@ -19,13 +19,12 @@ $mysql_bin_path = '/usr/bin';
 $baseurl = 'https://<%= @hostname %>';
 
 # Email settings
-$email_from = 'aut@naturalis.nl';
-$email_notify = 'aut@naturalis.nl';
+$email_from = '<%= @email_from %>';
+$email_notify = '<%= @email_notify %>';
 
-$spider_password = 'YtE9YpASUZYV';
-$scramble_key = 'Y4EgATAjyVyn';
-
-$api_scramble_key = 'uGEHaqaHuHA9';
+$spider_password = '<%= @spider_password %>';
+$scramble_key = '<%= @scramble_key %>';
+$api_scramble_key = '<%= @api_scramble_key %>';
 
 # Paths
 $imagemagick_path = '/usr/bin';

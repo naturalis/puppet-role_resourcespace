@@ -6,7 +6,8 @@
 
 # Define all the constant variables
 docroot="<%= @docroot %>"
-mysql_root_password="<%= @mysql_root_password %>"
+adminpasswd=`echo -n RSadmin<%= @adminpassword %> | md5sum | awk '{print $1}'`
+adminhash=`echo -n $adminpasswd | sha256sum | awk '{print $1}'`
 
 cd $docroot
 sudo svn co http://svn.resourcespace.org/svn/rs/trunk .
@@ -18,10 +19,12 @@ sudo chmod -R 777 filestore
 cp /opt/config.php ./include
 chmod 644 ./include/config.php
 
-
-
 #import database
 mysql -uroot -p"<%= @mysql_root_password %>" resourcespace < /opt/db.sql
 
-# restart apache2
+#update admin password
+mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e 'UPDATE user set password=$adminhash where username=admin;'
+mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e 'FLUSH PRIVILEGES;'
+
+#restart apache2
 service apache2 restart

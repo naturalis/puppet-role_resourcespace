@@ -55,6 +55,12 @@ class role_resourcespace (
   $max_input_time                       = '60',
   $short_open_tag                       = 'Off',
   $packages                             = ['git','subversion','imagemagick','ghostscript','antiword','xpdf','libav-tools','libimage-exiftool-perl'],
+  $adminpassword                        = 'RSadminpwd',
+  $spider_password                      = 'YtE9YpASUZYV',
+  $scramble_key                         = 'Y4EgATAjyVyn',
+  $api_scramble_key                     = 'uGEHaqaHuHA9',
+  $email_from                           = 'resourcespace@naturalis.nl',
+  $email_notify                         = 'resourcespace@naturalis.nl',
 ){
 
 # install packages
