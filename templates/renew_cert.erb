@@ -1,6 +1,13 @@
 # Renew Let's Encrypt SSL cert
 
+# stop puppet from messing up script during runtime
+/usr/bin/service puppet stop
+
+# stop apache and wait 5 seconds
 /usr/bin/service apache2 stop
+sleep 5
+
+# run letsencrypt-auto
 cd <%= @letsencrypt_path %>
 ./letsencrypt-auto certonly  --config <%= @letsencrypt_path %>/cli.ini
 if [ $? -ne 0 ]
@@ -12,5 +19,10 @@ if [ $? -ne 0 ]
         echo -e "The Lets Encrypt Cert has been renewed! \n \n" $ERRORLOG
 fi
 
+# start apache
 /usr/bin/service apache2 start
+
+# start puppet 
+/usr/bin/service puppet start
+
 exit 0

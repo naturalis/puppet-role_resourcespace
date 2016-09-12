@@ -13,7 +13,7 @@ class role_resourcespace::letsencrypt (
 ){
   # install letsencrypt repo
   vcsrepo { $path:
-    ensure      => present,
+    ensure      => latest,
     provider    => git,
     source      => $repo,
     revision    => $version,
@@ -49,8 +49,8 @@ class role_resourcespace::letsencrypt (
     path        => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ],
     require     => File["${path}/cli.ini"]
   }
-  # renew cert each month
-  file { '/etc/cron.monthly/renew_cert':
+  # renew cert each week
+  file { '/etc/cron.weekly/renew_cert':
     ensure        => file,
     mode          => '0755',
     owner         => 'root',

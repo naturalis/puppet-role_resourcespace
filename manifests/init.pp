@@ -14,7 +14,7 @@ class role_resourcespace (
   $letsencrypt                            = true,
   $letsencrypt_path                       = '/opt/letsencrypt',
   $letsencrypt_repo                       = 'git://github.com/letsencrypt/letsencrypt.git',
-  $letsencrypt_version                    = 'v0.1.0',
+  $letsencrypt_version                    = 'master',
   $letsencrypt_live                       = '/etc/letsencrypt/live/rs.naturalis.nl/cert.pem',
   $letsencrypt_email                      = 'aut@naturalis.nl',
   $letsencrypt_domain                     = 'rs.naturalis.nl',
