@@ -42,7 +42,7 @@ class role_resourcespace::letsencrypt (
     content     => template('role_resourcespace/options-ssl-apache.conf.erb'),
     require     => [Exec['initialize letsencrypt'],Exec['install letsencrypt']],
   }
-  #installing cert and authenticate on port 443, before apache binds the port
+  # installing cert and authenticate on port 443, before apache binds the port
   exec { 'install letsencrypt':
     command     => "${path}/letsencrypt-auto certonly --config ${path}/cli.ini",
     creates     => $live,
@@ -57,4 +57,18 @@ class role_resourcespace::letsencrypt (
     group         => 'root',
     content       => template('role_resourcespace/renew_cert.erb'),
   }
+
+ # create ssl check script for usage with monitoring tools ( sensu )
+  file {'/usr/local/sbin/sslchk.sh':
+    ensure        => 'file',
+    mode          => '0777',
+    content       => template('role_resourcespace/sslchk.sh.erb')
+  }
+
+ # export check so sensu monitoring can make use of it
+  @sensu::check { 'Check SSL expire date' :
+    command => '/usr/local/sbin/sslchk.sh',
+    tag     => 'central_sensu',
+  }
+
 }
