@@ -1,0 +1,21 @@
+#!/bin/bash
+##################################################################
+# This script is for checking the update status of resourcespace #
+##################################################################
+
+# Define all the constant variables
+cd "<%= @docroot %>"
+remoterev=`svn info -r HEAD | grep -i "Last Changed Rev" | awk '{print $4}'`
+localrev=`svn info | grep -i "Last Changed Rev" | awk '{print $4}'`
+
+if [ "$remoterev" != "$localrev" ]
+  then
+    echo "CRITICAL : SVN update needed. local revision = $localrev, remote revision = $remoterev"
+    exit 2
+  else
+    echo "OK: SVN status up to date, revision: $localrev"
+    exit 0
+fi
+
+
+

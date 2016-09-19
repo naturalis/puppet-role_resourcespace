@@ -169,4 +169,19 @@ class role_resourcespace (
     minute  => 0
   }
 
+# create svn update check script for for usage with monitoring tools ( sensu )
+  file {'/usr/local/sbin/svnupdatechk.sh':
+    ensure        => 'file',
+    mode          => '0777',
+    content       => template('role_resourcespace/svnupdatechk.sh.erb')
+  }
+
+# export check so sensu monitoring can make use of it
+  @sensu::check { 'Check SVN update' :
+    command => '/usr/local/sbin/svnupdatechk.sh',
+    tag     => 'central_sensu',
+ }
+
+
+
 }
