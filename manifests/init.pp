@@ -61,6 +61,17 @@ class role_resourcespace (
   $api_scramble_key                     = 'uGEHaqaHuHA9',
   $email_from                           = 'resourcespace@naturalis.nl',
   $email_notify                         = 'resourcespace@naturalis.nl',
+
+# variables used for installing plugins
+  $plugin_install                       = true,
+  $plugin_repo                          = 'https://github.com/naturalis/rs-lng-plugins.git',
+  $plugin_repo_revision                 = 'master',
+  $plugin_repo_ensure                   = 'latest',
+  $plugin_array                         = ['api_new_user_lng','api_search_lng','api_upload_lng'],
+  $plugin_location                      = '/opt/rs-lng-plugins',
+
+# variables used for autoupdate
+  $auto_update                          = false,
 ){
 
 # install packages
@@ -106,6 +117,14 @@ class role_resourcespace (
       require                 => Package[$packages],
     }
   }
+
+# Install plugins
+  if ($plugin_install == true){
+    class { 'role_resourcespace::installplugins':
+      require                 => Exec['Build resourcespace']
+    }
+  }
+
 
 # Configure MySQL Security and finetuning if needed
   class { 'mysql::server::account_security':}
@@ -182,6 +201,15 @@ class role_resourcespace (
     tag     => 'central_sensu',
  }
 
-
+# auto update svn repo
+  if ($auto_update == true){
+    exec { 'SVN update':
+      cwd            => $docroot,
+      path           => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ],
+      command        => "svn up",
+      onlyif         => "/usr/local/sbin/svnupdatechk.sh | grep -c CRITICAL",
+      require        => File['/usr/local/sbin/svnupdatechk.sh']
+    }
+  }
 
 }

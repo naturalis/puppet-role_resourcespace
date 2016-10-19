@@ -6,7 +6,7 @@
 
 # Define all the constant variables
 docroot="<%= @docroot %>"
-adminpasswd=`echo -n RSadmin<%= @adminpassword %> | md5sum | awk '{print $1}'`
+adminpasswd=`echo -n <%= @adminpassword %> | md5sum | awk '{print $1}'`
 adminhash=`echo -n $adminpasswd | sha256sum | awk '{print $1}'`
 
 cd $docroot
@@ -23,8 +23,8 @@ chmod 644 ./include/config.php
 mysql -uroot -p"<%= @mysql_root_password %>" resourcespace < /opt/db.sql
 
 #update admin password
-mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e 'UPDATE user set password=$adminhash where username=admin;'
-mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e 'FLUSH PRIVILEGES;'
+mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e "UPDATE user set password='$adminhash' where username='admin';"
+mysql -uroot -p"<%= @mysql_root_password %>" resourcespace -e "FLUSH PRIVILEGES;"
 
 #restart apache2
 service apache2 restart
