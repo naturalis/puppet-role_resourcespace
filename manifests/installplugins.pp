@@ -14,17 +14,14 @@ class role_resourcespace::installplugins (
     provider    => git,
     source      => $role_resourcespace::plugin_repo,
     revision    => $role_resourcespace::plugin_repo_revision,
+    notify      => Exec['rsync plugins']
   }
 
-# make createSymlink function
-define createSymlink {
-  file { "${role_resourcespace::docroot}/plugins/$name":
-    ensure      => 'link',
-    target      => "${role_resourcespace::plugin_location}/$name",
-    require     => Vcsrepo[$role_resourcespace::plugin_location]
- }
-}
+# rsync plugins
+  exec {'rsync plugins':
+    command     => "rsync -avh ${role_resourcespace::plugin_location}/* ${role_resourcespace::docroot}/plugins/ --delete --exclude '.git' --exclude '.gitignore'",
+    path        => [ '/bin/', '/sbin/' , '/usr/bin/', '/usr/sbin/' ],
+    refreshonly => true,
+  }
 
-# create symlinks for each plugin in plugin_array
-  createSymlink { $role_resourcespace::plugin_array: }
 }

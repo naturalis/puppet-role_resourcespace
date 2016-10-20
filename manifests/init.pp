@@ -67,7 +67,6 @@ class role_resourcespace (
   $plugin_repo                          = 'https://github.com/naturalis/rs-lng-plugins.git',
   $plugin_repo_revision                 = 'master',
   $plugin_repo_ensure                   = 'latest',
-  $plugin_array                         = ['api_new_user_lng','api_search_lng','api_upload_lng'],
   $plugin_location                      = '/opt/rs-lng-plugins',
 
 # variables used for autoupdate
