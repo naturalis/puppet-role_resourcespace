@@ -194,11 +194,14 @@ class role_resourcespace (
     content       => template('role_resourcespace/svnupdatechk.sh.erb')
   }
 
+#
+# CHECK DISABLED.. no action about updating was taken since start of check
+#
 # export check so sensu monitoring can make use of it
-  @sensu::check { 'Check SVN update' :
-    command => '/usr/local/sbin/svnupdatechk.sh',
-    tag     => 'central_sensu',
- }
+#  @sensu::check { 'Check SVN update' :
+#    command => '/usr/local/sbin/svnupdatechk.sh',
+#    tag     => 'central_sensu',
+#}
 
 # auto update svn repo
   if ($auto_update == true){
